@@ -15,6 +15,7 @@
 */
 
 SET NAMES utf8mb4;
+/*取消外键约束*/
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------

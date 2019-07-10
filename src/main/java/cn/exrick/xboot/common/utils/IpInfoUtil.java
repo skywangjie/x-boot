@@ -1,13 +1,11 @@
 package cn.exrick.xboot.common.utils;
 
-
 import cn.exrick.xboot.common.vo.IpInfo;
 import cn.exrick.xboot.common.vo.IpLocate;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import com.google.gson.Gson;
-import com.qiniu.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -21,6 +19,7 @@ import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.*;
 
 /**
  * @author Exrickx
@@ -32,11 +31,8 @@ public class IpInfoUtil {
     @Value("${xboot.mob.appKey}")
     private String appKey;
 
-    private static Pattern NUMBER_PATTERN = Pattern.compile("\\<h2>(.*?)\\<\\/h2>");
-
     /**
      * 获取客户端IP地址
-     *
      * @param request 请求
      * @return
      */
@@ -51,7 +47,7 @@ public class IpInfoUtil {
         }
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
-            if ("127.0.0.1".equals(ip)) {
+            if (ip.equals("127.0.0.1")) {
                 //根据网卡取本机配置的IP
                 InetAddress inet = null;
                 try {
@@ -71,24 +67,26 @@ public class IpInfoUtil {
         if ("0:0:0:0:0:0:0:1".equals(ip)) {
             ip = "127.0.0.1";
         }
-        System.out.println("ip:" + ip);
-        if (StringUtils.isNullOrEmpty(ip) || "127.0.0.1".equals(ip) || "localhost".equals(ip)) {
-            ip = getV4Ip();
+
+        //如果ip地址是本机则获取外网ip地址
+
+        if ("localhost".equals(ip) || "127.0.0.1".equals(ip)) {
+            ip = getV4IP();
         }
+
         return ip;
     }
 
     /**
      * 获取IP返回地理天气信息
-     *
      * @param ip ip地址
      * @return
      */
     public String getIpWeatherInfo(String ip) {
 
-        String getIpWeather = "http://apicloud.mob.com/v1/weather/ip?key=" + appKey + "&ip=";
+        String GET_IP_WEATHER = "http://apicloud.mob.com/v1/weather/ip?key=" + appKey + "&ip=";
         if (StrUtil.isNotBlank(ip)) {
-            String url = getIpWeather + ip;
+            String url = GET_IP_WEATHER + ip;
             String result = HttpUtil.get(url);
             return result;
         }
@@ -97,15 +95,14 @@ public class IpInfoUtil {
 
     /**
      * 获取IP返回地理信息
-     *
      * @param ip ip地址
      * @return
      */
     public String getIpCity(String ip) {
 
-        String getIpLocate = "http://apicloud.mob.com/ip/query?key=" + appKey + "&ip=";
+        String GET_IP_LOCATE = "http://apicloud.mob.com/ip/query?key=" + appKey + "&ip=";
         if (null != ip) {
-            String url = getIpLocate + ip;
+            String url = GET_IP_LOCATE + ip;
             String result = "未知";
             try {
                 String json = HttpUtil.get(url, 3000);
@@ -166,27 +163,12 @@ public class IpInfoUtil {
     }
 
     /**
-     * 获得内网IP
-     *
-     * @return 内网IP
-     */
-    private static String getIntranetIp() {
-        try {
-            return InetAddress.getLocalHost().getHostAddress();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    /**
-     * 获取本机的外网ip地址
-     *
+     * 获取本地外网ip地址
      * @return
      */
-    public static String getV4Ip() {
+    public static String getV4IP() {
         String ip = "";
-        String chinaz = "http://www.net.cn/static/customercare/yourip.asp";
+        String chinaz = "";
 
         StringBuilder inputLine = new StringBuilder();
         String read = "";
@@ -194,19 +176,12 @@ public class IpInfoUtil {
         HttpURLConnection urlConnection = null;
         BufferedReader in = null;
         try {
-            url = new URL(chinaz);
+            url = new URL("http://www.ip138.com/");
             urlConnection = (HttpURLConnection) url.openConnection();
-            //服务器的安全设置不接受Java程序作为客户端访问 设置User Agent
-            //urlConnection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
-            int responsecode = urlConnection.getResponseCode();
-            System.out.println("responsecode:" + responsecode);
-            if (responsecode == 200) {
-                in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
-                while ((read = in.readLine()) != null) {
-                    inputLine.append(read + "\r\n");
-                }
+            in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
+            while ((read = in.readLine()) != null) {
+                inputLine.append(read + "\r\n");
             }
-            //System.out.println(inputLine.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -221,19 +196,15 @@ public class IpInfoUtil {
                 }
             }
         }
-        Pattern p = NUMBER_PATTERN;
+
+        Pattern p = compile("\\<dd class\\=\"fz24\">(.*?)\\<\\/dd>");
         Matcher m = p.matcher(inputLine.toString());
         if (m.find()) {
             String ipstr = m.group(1);
             ip = ipstr;
-            System.out.println(ipstr);
         }
+        log.info("返回的外网ip地址：" + ip);
         return ip;
     }
 
-
-    public static void main(String[] args) {
-
-        System.out.println("外网ip：" + IpInfoUtil.getV4Ip());
-    }
 }

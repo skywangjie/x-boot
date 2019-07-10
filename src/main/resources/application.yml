@@ -44,7 +44,7 @@ spring:
   # Redis
   redis:
     host: 127.0.0.1
-    password:
+    password: redis
     # 数据库索引 默认0
     database: 0
     port: 6379
@@ -118,15 +118,15 @@ xboot:
     es: false
   # 七牛云配置
   qiniu:
-    accessKey: 你的accessKey
-    secretKey: 你的secretKey
-    bucket: 你的空间名
-    domain: 你的域名，如http://p77xsahe9.bkt.clouddn.com
+    accessKey: qM0y9z4_NGLiZyXCH0JNX867Li75lLeuKLFyOYHN
+    secretKey: jfXrEayRMa5V8ZKmH23EY2eTgEM_KtpgvXUbJWYL
+    bucket: image
+    domain: http://puemdepne.bkt.clouddn.com
     # 存储区域 -1自动判断 0华东 1华北 2华南 3北美 4东南亚
     zone: -1
   # mob api配置 mob官网注册申请即可
   mob:
-    appKey: 你的appKey
+    appKey: 2ba8b5bc5700a
 
 # 需要验证码校验的接口路径 支持通配符 自动过滤拦截校验 无需开发人员再次校验
 captcha:

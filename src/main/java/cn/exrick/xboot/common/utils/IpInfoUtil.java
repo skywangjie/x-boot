@@ -69,7 +69,6 @@ public class IpInfoUtil {
         if ("0:0:0:0:0:0:0:1".equals(ip)) {
             ip = "127.0.0.1";
         }
-        System.out.println("ip:" + ip);
         if (StringUtils.isNullOrEmpty(ip) || "127.0.0.1".equals(ip) || "localhost".equals(ip)) {
             ip = getV4Ip();
         }
@@ -196,7 +195,6 @@ public class IpInfoUtil {
             //服务器的安全设置不接受Java程序作为客户端访问 设置User Agent
             //urlConnection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
             int responsecode = urlConnection.getResponseCode();
-            System.out.println("responsecode:" + responsecode);
             if (responsecode == 200) {
                 in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
                 while ((read = in.readLine()) != null) {
@@ -223,7 +221,6 @@ public class IpInfoUtil {
         if (m.find()) {
             String ipstr = m.group(1);
             ip = ipstr;
-            System.out.println(ipstr);
         }
         return ip;
     }
